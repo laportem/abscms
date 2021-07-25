@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_account_phones",
+  "info": {
+    "name": "phone",
+    "icon": "mobile-alt",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "number": {
+      "type": "string"
+    },
+    "type": {
+      "model": "lookup"
+    },
+    "uuid": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    }
+  }
+}

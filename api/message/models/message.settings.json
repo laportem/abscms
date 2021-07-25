@@ -1,0 +1,54 @@
+{
+  "kind": "collectionType",
+  "collectionName": "messages",
+  "info": {
+    "name": "message",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "firstname": {
+      "type": "string",
+      "required": true
+    },
+    "lastname": {
+      "type": "string",
+      "required": true
+    },
+    "email": {
+      "type": "email",
+      "required": true
+    },
+    "phone": {
+      "type": "string"
+    },
+    "message": {
+      "type": "richtext",
+      "required": true
+    },
+    "refcode": {
+      "type": "string"
+    },
+    "user": {
+      "type": "boolean",
+      "default": false,
+      "required": true
+    },
+    "attachment": {
+      "model": "file",
+      "via": "related",
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos"
+      ],
+      "plugin": "upload",
+      "required": false,
+      "pluginOptions": {}
+    }
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "collectionName": "components_account_affiliations",
+  "info": {
+    "name": "affiliation",
+    "icon": "american-sign-language-interpreting",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "relationship": {
+      "model": "lookup"
+    },
+    "relationshipother": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "othername": {
+      "type": "string"
+    },
+    "email": {
+      "type": "email"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "fax": {
+      "type": "string"
+    },
+    "street": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "postcode": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "regType": {
+      "type": "string"
+    },
+    "regNumber": {
+      "type": "string"
+    },
+    "regCountry": {
+      "type": "string"
+    },
+    "regDesc": {
+      "type": "text"
+    },
+    "uuid": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    }
+  }
+}

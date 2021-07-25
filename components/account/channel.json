@@ -1,0 +1,23 @@
+{
+  "collectionName": "components_account_channels",
+  "info": {
+    "name": "channel",
+    "icon": "award",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "model": "lookup"
+    },
+    "primary": {
+      "type": "boolean",
+      "default": false
+    },
+    "uuid": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    }
+  }
+}

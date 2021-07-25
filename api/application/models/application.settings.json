@@ -1,0 +1,54 @@
+{
+  "kind": "collectionType",
+  "collectionName": "applications",
+  "info": {
+    "name": "application",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "uuid": {
+      "type": "uid",
+      "required": true
+    },
+    "startdate": {
+      "type": "datetime"
+    },
+    "account": {
+      "model": "account",
+      "via": "applications"
+    },
+    "form": {
+      "type": "json"
+    },
+    "status": {
+      "type": "string",
+      "required": true
+    },
+    "submitdate": {
+      "type": "datetime"
+    },
+    "documents": {
+      "collection": "file",
+      "via": "related",
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos"
+      ],
+      "plugin": "upload",
+      "required": false,
+      "pluginOptions": {}
+    },
+    "refnum": {
+      "type": "string",
+      "maxLength": 25,
+      "unique": true,
+      "minLength": 8
+    }
+  }
+}

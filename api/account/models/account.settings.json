@@ -1,0 +1,89 @@
+{
+  "kind": "collectionType",
+  "collectionName": "accounts",
+  "info": {
+    "name": "account",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "firstname": {
+      "type": "string",
+      "required": false
+    },
+    "lastname": {
+      "type": "string",
+      "required": true
+    },
+    "email": {
+      "type": "email"
+    },
+    "avatar": {
+      "model": "file",
+      "via": "related",
+      "allowedTypes": [
+        "images"
+      ],
+      "plugin": "upload",
+      "required": false
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "required": true
+    },
+    "about": {
+      "type": "richtext"
+    },
+    "user": {
+      "plugin": "users-permissions",
+      "model": "user",
+      "via": "account"
+    },
+    "fullname": {
+      "type": "string",
+      "required": false
+    },
+    "addresses": {
+      "type": "component",
+      "repeatable": true,
+      "component": "account.address"
+    },
+    "phones": {
+      "type": "component",
+      "repeatable": true,
+      "component": "account.phone"
+    },
+    "salutation": {
+      "model": "lookup"
+    },
+    "socialmedias": {
+      "type": "component",
+      "repeatable": true,
+      "component": "account.socialmedia"
+    },
+    "locales": {
+      "type": "component",
+      "repeatable": true,
+      "component": "account.locale"
+    },
+    "channels": {
+      "type": "component",
+      "repeatable": true,
+      "component": "account.channel"
+    },
+    "affiliations": {
+      "type": "component",
+      "repeatable": true,
+      "component": "account.affiliation"
+    },
+    "applications": {
+      "via": "account",
+      "collection": "application"
+    }
+  }
+}

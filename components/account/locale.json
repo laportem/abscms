@@ -1,0 +1,23 @@
+{
+  "collectionName": "components_account_locales",
+  "info": {
+    "name": "locale",
+    "icon": "asterisk",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "model": "lookup"
+    },
+    "primary": {
+      "type": "boolean",
+      "default": false
+    },
+    "uuid": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    }
+  }
+}

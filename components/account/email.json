@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_account_emails",
+  "info": {
+    "name": "email",
+    "icon": "at",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "primary": {
+      "type": "boolean",
+      "default": false
+    },
+    "uuid": {
+      "type": "string",
+      "unique": true,
+      "required": true
+    },
+    "address": {
+      "type": "email",
+      "required": true
+    }
+  }
+}

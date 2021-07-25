@@ -1,0 +1,23 @@
+{
+  "collectionName": "components_content_pages",
+  "info": {
+    "name": "Page",
+    "icon": "book-open",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    },
+    "content": {
+      "type": "richtext"
+    },
+    "date_updated": {
+      "type": "datetime",
+      "required": true
+    }
+  }
+}

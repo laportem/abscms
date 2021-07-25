@@ -1,0 +1,27 @@
+{
+  "collectionName": "components_account_socialmedias",
+  "info": {
+    "name": "socialmedia",
+    "icon": "atlas",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "url": {
+      "type": "string"
+    },
+    "platform": {
+      "model": "lookup"
+    },
+    "uuid": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    }
+  }
+}

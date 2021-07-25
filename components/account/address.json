@@ -1,0 +1,34 @@
+{
+  "collectionName": "components_account_addresses",
+  "info": {
+    "name": "address",
+    "icon": "house-damage",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "city": {
+      "type": "string",
+      "required": true
+    },
+    "postcode": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string",
+      "required": true
+    },
+    "state": {
+      "type": "string"
+    },
+    "street": {
+      "type": "string",
+      "required": true
+    },
+    "uuid": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    }
+  }
+}
