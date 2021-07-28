@@ -12,17 +12,18 @@ LABEL org.opencontainers.image.title="CMS Application part of the Seychelles ABS
       org.opencontainers.image.source="https://github.com/laportem/abscms.git" \
       org.opencontainers.image.authors="Manny Laporte (mannylaporte@gmail.com)"
 
-# Switch to working folder
-WORKDIR /app
+# Create app directory and switch to it
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
 
 # Copy both 'package.json' and 'package-lock.json' to ./app
-COPY package*.json ./
+COPY package*.json /usr/src/app
 
 # Install project dependencies in 'package.json'
 RUN npm install
 
 # Copy project files and folders to the current working directory ./app
-COPY . .
+COPY . /usr/src/app
 
 # Build app for production
 RUN npm run build
