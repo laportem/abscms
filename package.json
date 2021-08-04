@@ -15,6 +15,7 @@
     "strapi": "3.6.5",
     "strapi-admin": "3.6.5",
     "strapi-connector-bookshelf": "3.6.5",
+    "strapi-plugin-backup-restore": "^0.5.1",
     "strapi-plugin-content-manager": "3.6.5",
     "strapi-plugin-content-type-builder": "3.6.5",
     "strapi-plugin-email": "3.6.5",

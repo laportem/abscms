@@ -1,0 +1,29 @@
+{
+  "kind": "collectionType",
+  "collectionName": "helps",
+  "info": {
+    "name": "help"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "content": {
+      "type": "richtext"
+    },
+    "slug": {
+      "type": "string",
+      "required": true,
+      "maxLength": 20,
+      "minLength": 5,
+      "unique": true
+    }
+  }
+}
