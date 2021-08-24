@@ -5,7 +5,6 @@ const fs = require('fs');
 const _sugarURL = process.env.CRM_API_ENDPOINT;
 
 async function getSugarToken() {
-    console.log('=======getSugarToken======')
     let _token = null;
     try {
         const _payload = {
@@ -33,7 +32,6 @@ async function getSugarToken() {
 }
 
 async function getRecordIdByEmail(accessToken, email, module) {
-    console.log('=======getRecordIdByEmail======' + module);
     let _id = null;
     try {       
         const _filter = {
@@ -64,7 +62,6 @@ async function getRecordIdByEmail(accessToken, email, module) {
 }
 
 async function createContact(accessToken, form) {
-    console.log('=======createContact======')
     let _id = null;
     let _payload = {
         salutation: null,
@@ -95,7 +92,7 @@ async function createContact(accessToken, form) {
         if (_name) {
             _payload.salutation = _name.salutation ? _name.salutation.code : null;
             _payload.first_name  = _name.firstname ? _name.firstname : 'unknown';
-            _payload.salutation = _name.lastname ? _name.lastname : 'unknown';
+            _payload.last_name = _name.lastname ? _name.lastname : 'unknown';
         }
 
         _payload.email1 = form.section4.email && form.section4.email.address ? form.section4.email.address : null;
@@ -156,8 +153,7 @@ async function createContact(accessToken, form) {
     return _id;
 }
 
-async function createContactIndentity(accessToken, form, contactId) {
-    console.log('=======createContactIndentity======')
+async function createContactIndentities(accessToken, form, contactId) {
     try { 
         const _identifications = form.section4.identifications;
         if (_identifications && _identifications.length > 0) {
@@ -168,6 +164,7 @@ async function createContactIndentity(accessToken, form, contactId) {
                     issuing_country_c: null,
                     valid_from_c: null,
                     valid_to_c: null,
+                    description: null,
                     uuid_c: null,
                 }
                 _payload.name = item && item.number ? item.number : 'unknown';
@@ -178,6 +175,7 @@ async function createContactIndentity(accessToken, form, contactId) {
                     // _parts[2] = YYYY, _parts[1] = MM, _parts[0] = DD - notice the month (_parts[1]); JS counts months from 0:
                     _payload.valid_to_c = new Date(_parts[2], _parts[1] - 1, _parts[0]);
                 }
+                _payload.description = item && item.description ? item.description : null;
                 _payload.uuid_c = item && item.uuid ? item.uuid : null;
                 const _request = {
                     method: 'POST',
@@ -196,7 +194,6 @@ async function createContactIndentity(accessToken, form, contactId) {
 }
 
 async function createAccount(accessToken, form) {
-    console.log('=======createAccount======')
     let _id = null;
     let _payload = {
         name: null,
@@ -223,6 +220,7 @@ async function createAccount(accessToken, form) {
         linkedin_c: null,
         registration_number_c: null,
         registration_country_c: null,
+        registration_description_c: null,
     }
     try {
         const _name = form.section6.legalname;
@@ -274,6 +272,7 @@ async function createAccount(accessToken, form) {
         if (_registration) {
             _payload.registration_number_c = _registration.regnumber ? _registration.regnumber : null;
             _payload.registration_country_c = _registration.regcountry ? _registration.regcountry : null;
+            _payload.registration_description_c = _registration.regdesc ? _registration.regdesc : null;
         }
 
         const _request = {
@@ -296,7 +295,6 @@ async function createAccount(accessToken, form) {
 }
 
 async function linkContactToAccount(accessToken, contactId, accountId) {
-    console.log('=======linkContactToAccount======')
     try {
         const _payload = {
             accounts: {
@@ -319,7 +317,6 @@ async function linkContactToAccount(accessToken, contactId, accountId) {
 }
 
 async function createApplication(accessToken, form, contactId, accountId, refnum) {
-    console.log('=======createApplication======')
     let _id = null;
     let _payload = {
         name: refnum,
@@ -463,6 +460,488 @@ async function createApplication(accessToken, form, contactId, accountId, refnum
     return _id;
 }
 
+// These methods are for create related modules such as collaborators, Project Members, Sponsors etc..
+async function searchRelatedRecordIdByEmail(accessToken, email, module) {
+    let _id = null;
+    let _fullname = null;
+    try {       
+        const _filter = {
+            "filter": [{ "email_addresses.email_address": email }],
+            "fields": ["id", "name", "full_name"]
+        };
+        const _request = {
+            method: 'POST',
+            headers: { 'OAuth-Token': accessToken, 'Content-Type': 'application/json' },
+            body: JSON.stringify(_filter),
+        };
+
+        const _response = module === 'contacts'
+            ? await fetch(`${_sugarURL}/Contacts/filter`, _request)
+            : await fetch(`${_sugarURL}/Accounts/filter`, _request);
+        
+        const _data = await _response.json();
+        if (_data && _data.records && _data.records.length > 0) {
+            _id = _data.records[0].id;
+            _fullname = module === 'contacts' ? _data.records[0].full_name : _data.records[0].name;
+        }
+    } catch(err) {
+        console.log(err);
+    }
+    return { id: _id, name: _fullname };
+}
+
+async function createRelatedContact(accessToken, item) {
+    let _id = null;
+    let _fullname = null;
+    try { 
+        let _payload = {
+            salutation: null,
+            first_name: null,
+            last_name: null,
+            email1: null,
+            phone_work: null,
+            phone_mobile: null,
+            primary_address_street: null,
+            primary_address_city: null,
+            primary_address_state: null,
+            primary_address_postalcode: null,
+            primary_address_country: null,
+            uuid_c: null,
+        }
+
+        const _name = item.name;
+        if (_name) {
+            _payload.salutation = _name.salutation ? _name.salutation.code : null;
+            _payload.first_name  = _name.firstname ? _name.firstname : 'unknown';
+            _payload.last_name = _name.lastname ? _name.lastname : 'unknown';
+        }
+
+        _payload.email1 = item.email ? item.email : null;
+        _payload.phone_work = item.workphone ? item.workphone : null;
+        _payload.phone_mobile = item.mobile ? item.mobile : null;
+        _payload.primary_address_street = item.street ? item.street : null;
+        _payload.primary_address_city = item.city ? item.city : null;
+        _payload.primary_address_state = item.state ? item.state : null;
+        _payload.primary_address_postalcode = item.postcode ? item.postcode : null;
+        _payload.primary_address_country = item.country ? item.country : null;
+        _payload.uuid_c = item.uuid ? item.uuid : null;
+        
+        const _request = {
+            method: 'POST',
+            headers: { 'OAuth-Token': accessToken, 'Content-Type': 'application/json' },
+            body: JSON.stringify(_payload)
+        };
+        const _response = await fetch(`${_sugarURL}/Contacts`, _request);
+        const _data = await _response.json();
+        if (_data) {
+            _id = _data.id;
+            _fullname = _data.full_name;
+        }
+
+        if (item.identity) {
+            const _identity = item.identity;
+            let _payloadIdentity = {
+                name: null,
+                identification_type_c: null,
+                issuing_country_c: null,
+                valid_from_c: null,
+                description: null,
+                valid_to_c: null,
+                uuid_c: null,
+            }
+            _payloadIdentity.name =  _identity.number ? _identity.number : 'unknown';
+            _payloadIdentity.identification_type_c = _identity.type && _identity.type.code ? _identity.type.code : null;
+            _payloadIdentity.issuing_country_c = _identity.country ? _identity.country : null;
+            _payloadIdentity.description = _identity.description ? _identity.description : null;
+            if (_identity.valid_until) {
+                var _parts = _identity.valid_until.split('/');
+                _payloadIdentity.valid_to_c = new Date(_parts[2], _parts[1] - 1, _parts[0]);
+            }
+
+            const _request = {
+                method: 'POST',
+                headers: { 'OAuth-Token': accessToken, 'Content-Type': 'application/json' },
+                body: JSON.stringify(_payloadIdentity)
+            };
+            await fetch(`${_sugarURL}/Contacts/${_id}/link/abs1_identifications_contacts`, _request);
+        }
+
+    } catch(err) {
+        console.log(err);
+    }
+    return { id: _id, name: _fullname };
+
+}
+
+async function createRelatedAccount(accessToken, item) {
+    let _id = null;
+    let _fullname = null;
+    let _payload = {
+        name: null,
+        short_name_c: null,
+        email1: null,
+        phone_office: null,
+        phone_mobile_c: null,
+        phone_fax: null,
+        phone_alternate: null,
+        billing_address_street: null,
+        billing_address_city: null,
+        billing_address_state: null,
+        billing_address_postalcode: null,
+        billing_address_country: null,
+        registration_number_c: null,
+        registration_country_c: null,
+        registration_description_c: null,
+    }
+    try {
+        const _name = item.name;
+        if (_name) {
+            _payload.name = _name.name ? _name.name  : 'unknown';
+            _payload.short_name_c  = _name.shortname ? _name.shortname : null;
+        }
+
+        _payload.email1 = item.email ? item.email : null;
+        _payload.phone_office = item.workphone ? item.workphone : null;
+        _payload.phone_mobile_c = item.mobile ? item.mobile : null;
+        _payload.billing_address_street = item.street ? item.street : null;
+        _payload.billing_address_city = item.city ? item.city : null;
+        _payload.billing_address_state = item.state ? item.state : null;
+        _payload.billing_address_postalcode = item.postcode ? item.postcode : null;
+        _payload.billing_address_country = item.country ? item.country : null;
+        _payload.uuid_c = item.uuid ? item.uuid : null;
+        if (item.registration) {
+            _payload.registration_number_c = item.registration.number ? item.registration.number : null;
+            _payload.registration_country_c = item.registration.country ? item.registration.country : null;
+            _payload.registration_description_c = item.registration.description ? item.registration.description : null;
+        }
+
+        const _request = {
+            method: 'POST',
+            headers: { 'OAuth-Token': accessToken, 'Content-Type': 'application/json' },
+            body: JSON.stringify(_payload),
+        };
+        const _response = await fetch(`${_sugarURL}/Accounts`, _request);
+        const _data = await _response.json();
+        if (_data && _data.id) {
+            _id = _data.id;
+            _fullname = _data.name;
+        }
+    } catch(err) {
+        console.log(err);
+    }
+    return { id: _id, name: _fullname };
+}
+
+async function createApplicationCollaborators(accessToken, form, opptyId, refnum) {
+    try { 
+        const _items = form.section9.collaborators;
+        if (_items && _items.length > 0) {
+            _items.forEach(async function (_item) {
+                const _type = _item.type;
+                if (_type && _type.code === 'individual') {
+                    let _contact = null
+                    let _contactId = null;
+                    let _contactName = null;
+                    if (_item.email) {
+                        _contact = await searchRelatedRecordIdByEmail(accessToken, _item.email, 'contacts');
+                        _contactId = _contact.id;
+                        _contactName = _contact.name;
+                    }
+                    if (!_contactId) {
+                        _contact = await createRelatedContact(accessToken, _item);
+                        _contactId = _contact.id;
+                        _contactName = _contact.name;
+                    } 
+                    let _payload = {
+                        collaborator_type: 'Individual',
+                        name: _contactName ? refnum + ' - ' + _contactName : refnum,
+                        uuid_c: _item.uuid,
+                        local_c: _item.local && _item.local.id === 1 ? "Yes" : "No",
+                        contact_id_c: _contactId,
+                    }
+                    const _request = {
+                        method: 'POST',
+                        headers: { 'OAuth-Token': accessToken, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(_payload),
+                    };
+                    await fetch(`${_sugarURL}/Opportunities/${opptyId}/link/abs1_collaborators_opportunities`, _request);
+                }
+                if (_type && _type.code === 'entity') {
+                    let _account = null
+                    let _accountId = null;
+                    let _accountName = null;
+                    if (_item.email) {
+                        _account = await searchRelatedRecordIdByEmail(accessToken, _item.email, 'accounts');
+                        _accountId = _account.id;
+                        _accountName = _account.name;
+                    }
+                    if (!_accountId) {
+                        _account = await createRelatedAccount(accessToken, _item);
+                        _accountId = _account.id;
+                        _accountName = _account.name;
+                    }
+                    let _payload = {
+                        collaborator_type: 'Organisation',
+                        name: _accountName ? refnum + ' - ' + _accountName : refnum,
+                        uuid_c: _item.uuid,
+                        local_c: _item.local && _item.local.id === 1 ? "Yes" : "No",
+                        account_id_c: _accountId,
+                    }
+                    const _request = {
+                        method: 'POST',
+                        headers: { 'OAuth-Token': accessToken, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(_payload),
+                    };
+                    await fetch(`${_sugarURL}/Opportunities/${opptyId}/link/abs1_collaborators_opportunities`, _request);
+                }
+            });
+        }
+    } catch(err) {
+        console.log(err);
+    }
+}
+
+async function createApplicationProjectMembers(accessToken, form, opptyId, refnum) {
+    try { 
+        const _items = form.section10.projectmembers;
+        if (_items && _items.length > 0) {
+            _items.forEach(async function (_item) {
+                let _contact = null
+                let _contactId = null;
+                let _contactName = null;
+                if (_item.email) {
+                    _contact = await searchRelatedRecordIdByEmail(accessToken, _item.email, 'contacts');
+                    _contactId = _contact.id;
+                    _contactName = _contact.name;
+                }
+                if (!_contactId) {
+                    _contact = await createRelatedContact(accessToken, _item);
+                    _contactId = _contact.id;
+                    _contactName = _contact.name;
+                } 
+                let _payload = {
+                    project_role: _item.role && _item.role.type ? _item.role.type.code : null,
+                    other_project_role: _item.role ? _item.role.other : null,
+                    name: _contactName ? refnum + ' - ' + _contactName : refnum,
+                    uuid_c: _item.uuid,
+                    local_c: _item.local && _item.local.id === 1 ? "Yes" : "No",
+                    contact_id_c: _contactId,
+                }
+                const _request = {
+                    method: 'POST',
+                    headers: { 'OAuth-Token': accessToken, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(_payload),
+                };
+                await fetch(`${_sugarURL}/Opportunities/${opptyId}/link/abs1_projectmembers_opportunities`, _request);
+            });
+        }
+    } catch(err) {
+        console.log(err);
+    }
+}
+
+async function createApplicationSponors(accessToken, form, opptyId, refnum) {
+    try { 
+        const _items = form.section11.sponsors;
+        if (_items && _items.length > 0) {
+            _items.forEach(async function (_item) {
+                const _type = _item.type;
+                if (_type && _type.code === 'individual') {
+                    let _contact = null
+                    let _contactId = null;
+                    let _contactName = null;
+                    if (_item.email) {
+                        _contact = await searchRelatedRecordIdByEmail(accessToken, _item.email, 'contacts');
+                        _contactId = _contact.id;
+                        _contactName = _contact.name;
+                    }
+                    if (!_contactId) {
+                        _contact = await createRelatedContact(accessToken, _item);
+                        _contactId = _contact.id;
+                        _contactName = _contact.name;
+                    } 
+                    let _payload = {
+                        sponsors_type: 'Individual',
+                        name: _contactName ? refnum + ' - ' + _contactName : refnum,
+                        uuid_c: _item.uuid,
+                        local_c: _item.local && _item.local.id === 1 ? "Yes" : "No",
+                        contact_id_c: _contactId,
+                    }
+                    const _request = {
+                        method: 'POST',
+                        headers: { 'OAuth-Token': accessToken, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(_payload),
+                    };
+                    await fetch(`${_sugarURL}/Opportunities/${opptyId}/link/abs1_sponsors_opportunities`, _request);
+                }
+                if (_type && _type.code === 'entity') {
+                    let _account = null
+                    let _accountId = null;
+                    let _accountName = null;
+                    if (_item.email) {
+                        _account = await searchRelatedRecordIdByEmail(accessToken, _item.email, 'accounts');
+                        _accountId = _account.id;
+                        _accountName = _account.name;
+                    }
+                    if (!_accountId) {
+                        _account = await createRelatedAccount(accessToken, _item);
+                        _accountId = _account.id;
+                        _accountName = _account.name;
+                    }
+                    let _payload = {
+                        sponsors_type: 'Organisation',
+                        name: _accountName ? refnum + ' - ' + _accountName : refnum,
+                        uuid_c: _item.uuid,
+                        local_c: _item.local && _item.local.id === 1 ? "Yes" : "No",
+                        account_id_c: _accountId,
+                    }
+                    const _request = {
+                        method: 'POST',
+                        headers: { 'OAuth-Token': accessToken, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(_payload),
+                    };
+                    await fetch(`${_sugarURL}/Opportunities/${opptyId}/link/abs1_sponsors_opportunities`, _request);
+                }
+            });
+        }
+    } catch(err) {
+        console.log(err);
+    }
+}
+
+async function createApplicationProviders(accessToken, form, opptyId, refnum) {
+    try { 
+        const _items = form.section17.providers;
+        if (_items && _items.length > 0) {
+            _items.forEach(async function (_item) {
+                const _type = _item.type;
+                if (_type && _type.code === 'individual') {
+                    let _contact = null
+                    let _contactId = null;
+                    let _contactName = null;
+                    if (_item.email) {
+                        _contact = await searchRelatedRecordIdByEmail(accessToken, _item.email, 'contacts');
+                        _contactId = _contact.id;
+                        _contactName = _contact.name;
+                    }
+                    if (!_contactId) {
+                        _contact = await createRelatedContact(accessToken, _item);
+                        _contactId = _contact.id;
+                        _contactName = _contact.name;
+                    } 
+                    let _payload = {
+                        provider_type: 'Individual',
+                        name: _contactName ? refnum + ' - ' + _contactName : refnum,
+                        uuid_c: _item.uuid,
+                        mat_c: _item.mat && _item.mat.id === 1 ? "Yes" : "No",
+                        contact_id_c: _contactId,
+                    }
+                    const _request = {
+                        method: 'POST',
+                        headers: { 'OAuth-Token': accessToken, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(_payload),
+                    };
+                    await fetch(`${_sugarURL}/Opportunities/${opptyId}/link/abs1_providers_opportunities`, _request);
+                }
+                if (_type && _type.code === 'entity') {
+                    let _account = null
+                    let _accountId = null;
+                    let _accountName = null;
+                    if (_item.email) {
+                        _account = await searchRelatedRecordIdByEmail(accessToken, _item.email, 'accounts');
+                        _accountId = _account.id;
+                        _accountName = _account.name;
+                    }
+                    if (!_accountId) {
+                        _account = await createRelatedAccount(accessToken, _item);
+                        _accountId = _account.id;
+                        _accountName = _account.name;
+                    }
+                    let _payload = {
+                        provider_type: 'entity',
+                        name: _accountName ? refnum + ' - ' + _accountName : refnum,
+                        uuid_c: _item.uuid,
+                        mat_c: _item.mat && _item.mat.id === 1 ? "Yes" : "No",
+                        account_id_c: _accountId,
+                    }
+                    const _request = {
+                        method: 'POST',
+                        headers: { 'OAuth-Token': accessToken, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(_payload),
+                    };
+                    await fetch(`${_sugarURL}/Opportunities/${opptyId}/link/abs1_providers_opportunities`, _request);
+                }
+            });
+        }
+    } catch(err) {
+        console.log(err);
+    }
+}
+
+async function createApplicationResources(accessToken, form, opptyId, refnum) {
+    try { 
+        const _items = form.section13.resources;
+        if (_items && _items.length > 0) {
+            let _count = 0;
+            _items.forEach(async function (_item) {
+                _count++;
+                let _payload = {
+                    name: refnum + ' - ' + _count,
+                    resource_type: _item.type,
+                    family: _item.family,
+                    resource_parts: _item.part,
+                    specimens: _item.quantity,
+                    collection_area: _item.area,
+                    uuid_c: _item.uuid,
+                }
+                const _request = {
+                    method: 'POST',
+                    headers: { 'OAuth-Token': accessToken, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(_payload),
+                };
+                await fetch(`${_sugarURL}/Opportunities/${opptyId}/link/abs1_resources_opportunities`, _request);
+            });
+        }
+    } catch(err) {
+        console.log(err);
+    }
+}
+
+async function createApplicationPrevious(accessToken, form, opptyId, refnum) {
+    try { 
+        const _items = form.section15.previouspermits;
+        if (_items && _items.length > 0) {
+            let _count = 0;
+            _items.forEach(async function (_item) {
+                _count++;
+                let _payload = {
+                    name: refnum + ' - ' + _count,
+                    date_submitted: null,
+                    status: _item.status && _item.status.code ? _item.status.code : null,
+                    authority: _item.submitted_to,
+                    authority_refnum: _item.ref_number,
+                    description: _item.comment,
+                    uuid_c: _item.uuid,
+                }
+                if (_item.submitted_date) {
+                    var _parts = _item.submitted_date.split('/');
+                    _payload.date_submitted = new Date(_parts[2], _parts[1] - 1, _parts[0]);
+                }
+                const _request = {
+                    method: 'POST',
+                    headers: { 'OAuth-Token': accessToken, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(_payload),
+                };
+                await fetch(`${_sugarURL}/Opportunities/${opptyId}/link/abs1_preapplications_opportunities`, _request);
+            });
+        }
+    } catch(err) {
+        console.log(err);
+    }
+}
+
+
+
 async function sendToCRM(entry) {
     console.log('=======sendToCRM======')
     const _form = entry.form;
@@ -475,7 +954,6 @@ async function sendToCRM(entry) {
     _accessToken = await getSugarToken();
     if (_contactEmail) {
         _contactId = await getRecordIdByEmail(_accessToken, _contactEmail, 'contacts');
-        console.log()
         if (!_contactId) {
             _newContact = true;
             _contactId = await createContact(_accessToken, _form);
@@ -489,15 +967,17 @@ async function sendToCRM(entry) {
     }
     if (_newContact) {
         await linkContactToAccount(_accessToken, _contactId, _accountId);
-        //await createContactIndentity(_accessToken, _form, _contactId);
+        await createContactIndentities(_accessToken, _form, _contactId);
     }
-    await createContactIndentity(_accessToken, _form, _contactId);
     const _refnum = entry.refnum;
     if (_refnum) {
-        const _opptyId = await createApplication(_accessToken, _form, _contactId, _accountId, _refnum)
-        console.log('========_opptyId=========' + _opptyId)
-        //await linkContactToApplication(_accessToken, _contactId, _opptyId);
-
+        const _opptyId = await createApplication(_accessToken, _form, _contactId, _accountId, _refnum);
+        await createApplicationCollaborators(_accessToken, _form, _opptyId, _refnum); //section 9
+        await createApplicationProjectMembers(_accessToken, _form, _opptyId, _refnum); //section 10
+        await createApplicationSponors(_accessToken, _form, _opptyId, _refnum); //section 11
+        await createApplicationResources(_accessToken, _form, _opptyId, _refnum); //section 13
+        await createApplicationPrevious(_accessToken, _form, _opptyId, _refnum); //section 15
+        await createApplicationProviders(_accessToken, _form, _opptyId, _refnum); //section 17
     }
 }
 
