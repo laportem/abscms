@@ -941,14 +941,13 @@ async function createApplicationPrevious(accessToken, form, opptyId, refnum) {
 }
 
 
-
 async function sendToCRM(entry) {
-    console.log('=======sendToCRM======')
     const _form = entry.form;
     let _accessToken = null;
     let _newContact = false;
     let _contactId = null;
     let _accountId = null;
+    let _opptyId = null;
     const _contactEmail = _form.section4 && _form.section4.email && _form.section4.email.address ? _form.section4.email.address : null;
     const _accountEmail = _form.section6 && _form.section6.email && _form.section6.email.address ? _form.section6.email.address : null;
     _accessToken = await getSugarToken();
@@ -971,7 +970,7 @@ async function sendToCRM(entry) {
     }
     const _refnum = entry.refnum;
     if (_refnum) {
-        const _opptyId = await createApplication(_accessToken, _form, _contactId, _accountId, _refnum);
+        _opptyId = await createApplication(_accessToken, _form, _contactId, _accountId, _refnum);
         await createApplicationCollaborators(_accessToken, _form, _opptyId, _refnum); //section 9
         await createApplicationProjectMembers(_accessToken, _form, _opptyId, _refnum); //section 10
         await createApplicationSponors(_accessToken, _form, _opptyId, _refnum); //section 11
@@ -979,18 +978,22 @@ async function sendToCRM(entry) {
         await createApplicationPrevious(_accessToken, _form, _opptyId, _refnum); //section 15
         await createApplicationProviders(_accessToken, _form, _opptyId, _refnum); //section 17
     }
+    return _opptyId;
 }
 
 
 module.exports = {
     lifecycles: {
         afterUpdate: async (entry) => {
-            console.log('---------------afterUpdate---------------');
-            const _form = entry.form ? entry.form : null;
-            console.log(entry.status); //TODO: add && _form.status != draft
-            console.log(entry.refnum);
-            if (_form) { //TODO: add && _form.status != draft
-                await sendToCRM(entry);
+            const _form = entry && entry.form ? entry.form : null;
+            if (_form) {
+                const _status = entry.status ? entry.status.toLowerCase() : null;
+                const _crmid = entry.crmid;
+                if (_status && _status === 'submitted') { //for testing use 'drafting'
+                    if (!_crmid) {
+                        entry.crmid = await sendToCRM(entry);
+                    }
+                }
             }
         },
     }

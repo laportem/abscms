@@ -49,6 +49,10 @@
       "maxLength": 25,
       "unique": true,
       "minLength": 8
+    },
+    "crmid": {
+      "type": "string",
+      "private": false
     }
   }
 }
