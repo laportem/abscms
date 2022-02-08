@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "currencies",
+  "info": {
+    "name": "currency",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "code": {
+      "type": "uid",
+      "required": true,
+      "maxLength": 3,
+      "minLength": 3
+    },
+    "label": {
+      "type": "string",
+      "required": true,
+      "maxLength": 20
+    }
+  }
+}

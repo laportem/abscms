@@ -1,8 +1,8 @@
 {
   "kind": "collectionType",
-  "collectionName": "guides",
+  "collectionName": "learns",
   "info": {
-    "name": "guide",
+    "name": "learn",
     "description": ""
   },
   "options": {
@@ -16,6 +16,16 @@
     }
   },
   "attributes": {
+    "title": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "maxLength": 200,
+      "required": true
+    },
     "content": {
       "pluginOptions": {
         "i18n": {
@@ -25,29 +35,29 @@
       "type": "richtext",
       "required": true
     },
-    "type": {
+    "order": {
       "pluginOptions": {
         "i18n": {
           "localized": false
         }
       },
-      "type": "enumeration",
-      "enum": [
-        "Any",
-        "ABS",
-        "NFR"
-      ],
+      "type": "integer",
       "required": true
     },
-    "slug": {
+    "banner": {
+      "model": "file",
+      "via": "related",
+      "allowedTypes": [
+        "images",
+        "videos"
+      ],
+      "plugin": "upload",
+      "required": false,
       "pluginOptions": {
         "i18n": {
           "localized": false
         }
-      },
-      "type": "string",
-      "maxLength": 200,
-      "required": true
+      }
     }
   }
 }

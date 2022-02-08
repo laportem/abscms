@@ -1,8 +1,8 @@
 {
   "kind": "collectionType",
-  "collectionName": "guides",
+  "collectionName": "abouts",
   "info": {
-    "name": "guide",
+    "name": "about",
     "description": ""
   },
   "options": {
@@ -16,6 +16,16 @@
     }
   },
   "attributes": {
+    "title": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "maxLength": 200,
+      "required": true
+    },
     "content": {
       "pluginOptions": {
         "i18n": {
@@ -25,29 +35,30 @@
       "type": "richtext",
       "required": true
     },
-    "type": {
+    "order": {
       "pluginOptions": {
         "i18n": {
           "localized": false
         }
       },
-      "type": "enumeration",
-      "enum": [
-        "Any",
-        "ABS",
-        "NFR"
-      ],
-      "required": true
+      "type": "integer",
+      "required": true,
+      "unique": false
     },
-    "slug": {
+    "banner": {
+      "model": "file",
+      "via": "related",
+      "allowedTypes": [
+        "images",
+        "videos"
+      ],
+      "plugin": "upload",
+      "required": false,
       "pluginOptions": {
         "i18n": {
           "localized": false
         }
-      },
-      "type": "string",
-      "maxLength": 200,
-      "required": true
+      }
     }
   }
 }
